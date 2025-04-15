@@ -1,217 +1,1317 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Patachitra Viewer</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Modern Patachitra Viewer</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f0f0;
-            overflow: hidden;
-        }
-        .patachitra-container {
-            display: grid;
-            grid-template-columns: repeat(11, 1fr);
-            grid-template-rows: repeat(6, 1fr);
-            gap: 5px;
-            width: 95vw;
-            height: 95vh;
-            background-color: #e0e0e0;
-            border: 2px solid #333;
-            padding: 10px;
-        }
-        .internal-container {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            gap: 5px;
-            background-color: #e0e0e0;
-            padding: 5px;
-        }
+      :root {
+        --primary-color: #394134;
+        --secondary-color: #004e98;
+        --background-color: #f8f9fa;
+        --panel-color: #ffffff;
+        --border-color: #dee2e6;
+        --highlight-color: #ff6b6b;
+        --text-color: #343a40;
+        --panel-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
 
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--background-color);
+        overflow: hidden;
+        color: var(--text-color);
+      }
 
-        .edge-panel {
-            border: 2px solid transparent;
-            background-color: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: border-color 0.3s ease;
-            cursor: pointer;
-            overflow: hidden;
-        }
-        .edge-panel img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .edge-panel.highlight {
-            border-color: red;
-        }
-        #upload-container {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
+      .main-container {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        position: relative;
+      }
+
+      .patachitra-container {
+        display: grid;
+        grid-template-columns: repeat(11, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+        gap: 8px;
+        flex: 1;
+        height: 100vh;
+        background-color: var(--background-color);
+        padding: 16px;
+        box-sizing: border-box;
+        transition: width 0.3s ease;
+        background-image: url("your-image.jpg"); /* Replace with your actual image path */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+
+      .internal-container {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        gap: 8px;
+        background-color: var(--background-color);
+        background-image: url("your-image.jpg"); /* Replace with your actual image path */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+
+      .edge-panel {
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background-color: var(--panel-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.15s ease-out;
+        cursor: pointer;
+        overflow: hidden;
+        box-shadow: var(--panel-shadow);
+        will-change: transform;
+      }
+
+      .edge-panel img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .edge-panel.highlight {
+        border-color: var(--highlight-color);
+        box-shadow:
+          0 0 0 2px var(--highlight-color),
+          var(--panel-shadow);
+        transform: scale(1.02);
+      }
+
+      .edge-panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      #sidebar {
+        height: 100vh;
+        background-color: var(--panel-color);
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        transition: all 0.2s ease-out;
+        z-index: 100;
+        min-width: 280px;
+        max-width: 1000px; /* Add this line */
+        resize: horizontal;
+        overflow: auto;
+        position: relative;
+        will-change: transform;
+      }
+
+      #sidebar.floating {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        height: auto;
+        max-height: 150vh;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        resize: both;
+      }
+
+      /* Replace your existing CSS for the resize handle indicator */
+      #sidebar.floating::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 15px;
+        height: 15px;
+        cursor: nesw-resize;
+        background: linear-gradient(
+          45deg,
+          var(--primary-color) 50%,
+          transparent 50%
+        );
+        border-bottom-left-radius: 8px;
+      }
+
+      #sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: var(--primary-color);
+        color: white;
+        cursor: move;
+        user-select: none;
+      }
+
+      #sidebar.floating #sidebar-header {
+        border-radius: 12px 12px 0 0;
+      }
+
+      #zoomed-view {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background-color: var(--panel-color);
+        border-radius: 8px;
+        margin: 16px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        background-image: url("your-image.jpg"); /* Replace with your actual image path */
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+        color: #ffffff;
+      }
+
+      #zoomed-view img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      body.fullscreen-mode .patachitra-container {
+        display: none;
+      }
+
+      body.fullscreen-mode #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw;
+        border-radius: 0;
+        z-index: 2000;
+      }
+
+      body.fullscreen-mode #sidebar #zoomed-view {
+        flex: 1;
+        max-height: none;
+      }
+
+      body.fullscreen-mode #sidebar #zoomed-view img {
+        max-height: 75vh;
+      }
+
+      .icon-button.active svg {
+        stroke: var(--highlight-color);
+      }
+
+      #panel-info {
+        background-color: var(--panel-color);
+        padding: 16px;
+        margin: 0 16px;
+        border-radius: 8px;
+        box-shadow: var(--panel-shadow);
+      }
+
+      #panel-info h3 {
+        margin-top: 0;
+        color: var(--secondary-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+      }
+
+      #panel-navigation {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        margin: 16px;
+        background-color: var(--panel-color);
+        border-radius: 8px;
+        box-shadow: var(--panel-shadow);
+      }
+
+      .sidebar-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 0 16px 16px;
+      }
+
+      .nav-button,
+      .action-button {
+        padding: 8px 16px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.15s ease-out;
+      }
+
+      .nav-button:hover,
+      .action-button:hover {
+        background-color: var(--secondary-color);
+      }
+
+      #panel-number {
+        font-weight: 500;
+        color: var(--text-color);
+      }
+
+      #resize-handle {
+        width: 10px;
+        height: 100%;
+        cursor: ew-resize;
+        position: absolute;
+        left: 0;
+        top: 0;
+        background-color: transparent;
+      }
+
+      #file-upload-container {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background-color: var(--panel-color);
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: var(--panel-shadow);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: all 0.2s ease-out;
+      }
+
+      #file-upload-container.hidden {
+        transform: translateX(-150%);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .file-upload-button {
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .file-upload-button input[type="file"] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .instructions {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+      }
+
+      .toggle-button {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1001;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease-out;
+      }
+
+      .toggle-button:hover {
+        transform: scale(1.1);
+      }
+
+      .drag-handle {
+        cursor: move;
+      }
+
+      .icon-button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease-out;
+      }
+
+      .icon-button:hover {
+        transform: scale(1.1);
+      }
     </style>
-</head>
-<body>
-    <div id="upload-container">
-        <input type="file" id="image-upload" accept="image/*" multiple>
+  </head>
+  <body>
+    <div id="file-upload-container" class="hidden">
+      <h3>Upload Images</h3>
+      <button class="action-button file-upload-button">
+        Choose Files
+        <input type="file" id="image-upload" accept="image/*" multiple />
+      </button>
+      <div class="instructions">
+        Select multiple images to populate the panels
+      </div>
+      <button id="hide-upload" class="action-button">Done</button>
     </div>
-    <div class="patachitra-container" id="patachitra-grid">
+
+    <button id="show-upload" class="toggle-button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+    </button>
+
+    <div class="main-container">
+      <div class="patachitra-container" id="patachitra-grid">
         <!-- Top row panels -->
-        <div id="panel1" class="edge-panel" style="grid-area: 1 / 1 / 2 / 2;"></div>
-        <div id="panel2" class="edge-panel" style="grid-area: 1 / 2 / 2 / 3;"></div>
-        <div id="panel3" class="edge-panel" style="grid-area: 1 / 3 / 2 / 4;"></div>
-        <div id="panel4" class="edge-panel" style="grid-area: 1 / 4 / 2 / 5;"></div>
-        <div id="panel5" class="edge-panel" style="grid-area: 1 / 5 / 2 / 6;"></div>
-        <div id="panel6" class="edge-panel" style="grid-area: 1 / 6 / 2 / 7;"></div>
-        <div id="panel7" class="edge-panel" style="grid-area: 1 / 7 / 2 / 8;"></div>
-        <div id="panel8" class="edge-panel" style="grid-area: 1 / 8 / 2 / 9;"></div>
-        <div id="panel9" class="edge-panel" style="grid-area: 1 / 9 / 2 / 10;"></div>
-        <div id="panel10" class="edge-panel" style="grid-area: 1 / 10 / 2 / 11;"></div>
-        <div id="panel11" class="edge-panel" style="grid-area: 1 / 11 / 2 / 12;"></div>
+        <div
+          id="panel1"
+          class="edge-panel"
+          style="grid-area: 1 / 1 / 2 / 2"
+        ></div>
+        <div
+          id="panel2"
+          class="edge-panel"
+          style="grid-area: 1 / 2 / 2 / 3"
+        ></div>
+        <div
+          id="panel3"
+          class="edge-panel"
+          style="grid-area: 1 / 3 / 2 / 4"
+        ></div>
+        <div
+          id="panel4"
+          class="edge-panel"
+          style="grid-area: 1 / 4 / 2 / 5"
+        ></div>
+        <div
+          id="panel5"
+          class="edge-panel"
+          style="grid-area: 1 / 5 / 2 / 6"
+        ></div>
+        <div
+          id="panel6"
+          class="edge-panel"
+          style="grid-area: 1 / 6 / 2 / 7"
+        ></div>
+        <div
+          id="panel7"
+          class="edge-panel"
+          style="grid-area: 1 / 7 / 2 / 8"
+        ></div>
+        <div
+          id="panel8"
+          class="edge-panel"
+          style="grid-area: 1 / 8 / 2 / 9"
+        ></div>
+        <div
+          id="panel9"
+          class="edge-panel"
+          style="grid-area: 1 / 9 / 2 / 10"
+        ></div>
+        <div
+          id="panel10"
+          class="edge-panel"
+          style="grid-area: 1 / 10 / 2 / 11"
+        ></div>
+        <div
+          id="panel11"
+          class="edge-panel"
+          style="grid-area: 1 / 11 / 2 / 12"
+        ></div>
 
         <!-- Left side panels -->
-        <div id="panel30" class="edge-panel" style="grid-area: 2 / 1 / 3 / 2;"></div>
-        <div id="panel29" class="edge-panel" style="grid-area: 3 / 1 / 4 / 2;"></div>
-        <div id="panel28" class="edge-panel" style="grid-area: 4 / 1 / 5 / 2;"></div>
-        <div id="panel27" class="edge-panel" style="grid-area: 5 / 1 / 6 / 2;"></div>
+        <div
+          id="panel30"
+          class="edge-panel"
+          style="grid-area: 2 / 1 / 3 / 2"
+        ></div>
+        <div
+          id="panel29"
+          class="edge-panel"
+          style="grid-area: 3 / 1 / 4 / 2"
+        ></div>
+        <div
+          id="panel28"
+          class="edge-panel"
+          style="grid-area: 4 / 1 / 5 / 2"
+        ></div>
+        <div
+          id="panel27"
+          class="edge-panel"
+          style="grid-area: 5 / 1 / 6 / 2"
+        ></div>
 
         <!-- Right side panels -->
-        <div id="panel12" class="edge-panel" style="grid-area: 2 / 11 / 3 / 12;"></div>
-        <div id="panel13" class="edge-panel" style="grid-area: 3 / 11 / 4 / 12;"></div>
-        <div id="panel14" class="edge-panel" style="grid-area: 4 / 11 / 5 / 12;"></div>
-        <div id="panel15" class="edge-panel" style="grid-area: 5 / 11 / 6 / 12;"></div>
+        <div
+          id="panel12"
+          class="edge-panel"
+          style="grid-area: 2 / 11 / 3 / 12"
+        ></div>
+        <div
+          id="panel13"
+          class="edge-panel"
+          style="grid-area: 3 / 11 / 4 / 12"
+        ></div>
+        <div
+          id="panel14"
+          class="edge-panel"
+          style="grid-area: 4 / 11 / 5 / 12"
+        ></div>
+        <div
+          id="panel15"
+          class="edge-panel"
+          style="grid-area: 5 / 11 / 6 / 12"
+        ></div>
 
         <!-- Bottom row panels -->
-        <div id="panel26" class="edge-panel" style="grid-area: 6 / 1 / 7 / 2;"></div>
-        <div id="panel25" class="edge-panel" style="grid-area: 6 / 2 / 7 / 3;"></div>
-        <div id="panel24" class="edge-panel" style="grid-area: 6 / 3 / 7 / 4;"></div>
-        <div id="panel23" class="edge-panel" style="grid-area: 6 / 4 / 7 / 5;"></div>
-        <div id="panel22" class="edge-panel" style="grid-area: 6 / 5 / 7 / 6;"></div>
-        <div id="panel21" class="edge-panel" style="grid-area: 6 / 6 / 7 / 7;"></div>
-        <div id="panel20" class="edge-panel" style="grid-area: 6 / 7 / 7 / 8;"></div>
-        <div id="panel19" class="edge-panel" style="grid-area: 6 / 8 / 7 / 9;"></div>
-        <div id="panel18" class="edge-panel" style="grid-area: 6 / 9 / 7 / 10;"></div>
-        <div id="panel17" class="edge-panel" style="grid-area: 6 / 10 / 7 / 11;"></div>
-        <div id="panel16" class="edge-panel" style="grid-area: 6 / 11 / 7 / 12;"></div>
+        <div
+          id="panel26"
+          class="edge-panel"
+          style="grid-area: 6 / 1 / 7 / 2"
+        ></div>
+        <div
+          id="panel25"
+          class="edge-panel"
+          style="grid-area: 6 / 2 / 7 / 3"
+        ></div>
+        <div
+          id="panel24"
+          class="edge-panel"
+          style="grid-area: 6 / 3 / 7 / 4"
+        ></div>
+        <div
+          id="panel23"
+          class="edge-panel"
+          style="grid-area: 6 / 4 / 7 / 5"
+        ></div>
+        <div
+          id="panel22"
+          class="edge-panel"
+          style="grid-area: 6 / 5 / 7 / 6"
+        ></div>
+        <div
+          id="panel21"
+          class="edge-panel"
+          style="grid-area: 6 / 6 / 7 / 7"
+        ></div>
+        <div
+          id="panel20"
+          class="edge-panel"
+          style="grid-area: 6 / 7 / 7 / 8"
+        ></div>
+        <div
+          id="panel19"
+          class="edge-panel"
+          style="grid-area: 6 / 8 / 7 / 9"
+        ></div>
+        <div
+          id="panel18"
+          class="edge-panel"
+          style="grid-area: 6 / 9 / 7 / 10"
+        ></div>
+        <div
+          id="panel17"
+          class="edge-panel"
+          style="grid-area: 6 / 10 / 7 / 11"
+        ></div>
+        <div
+          id="panel16"
+          class="edge-panel"
+          style="grid-area: 6 / 11 / 7 / 12"
+        ></div>
 
         <!-- Center panel -->
-        <div class="internal-container" style="grid-area: 2 / 2 / 6 / 11;">
-            <div id="panel31" class="edge-panel" style="grid-area: 1 / 1 / 2 / 2;"></div>
-            <div id="panel32" class="edge-panel" style="grid-area: 1 / 2 / 2 / 3;"></div>
-            <div id="panel33" class="edge-panel" style="grid-area: 1 / 3 / 2 / 4;"></div>
-            <div id="panel34" class="edge-panel" style="grid-area: 1 / 4 / 2 / 5;"></div>
+        <div class="internal-container" style="grid-area: 2 / 2 / 6 / 11">
+          <div
+            id="panel31"
+            class="edge-panel"
+            style="grid-area: 1 / 1 / 2 / 2"
+          ></div>
+          <div
+            id="panel32"
+            class="edge-panel"
+            style="grid-area: 1 / 2 / 2 / 3"
+          ></div>
+          <div
+            id="panel33"
+            class="edge-panel"
+            style="grid-area: 1 / 3 / 2 / 4"
+          ></div>
+          <div
+            id="panel34"
+            class="edge-panel"
+            style="grid-area: 1 / 4 / 2 / 5"
+          ></div>
 
-            <div id="panel35" class="edge-panel" style="grid-area: 2 / 1 / 3 / 3;"></div>
-            <div id="panel36" class="edge-panel" style="grid-area: 2 / 3 / 3 / 5;"></div>
+          <div
+            id="panel35"
+            class="edge-panel"
+            style="grid-area: 2 / 1 / 3 / 3"
+          ></div>
+          <div
+            id="panel36"
+            class="edge-panel"
+            style="grid-area: 2 / 3 / 3 / 5"
+          ></div>
 
-            <div id="panel37" class="edge-panel" style="grid-area: 7 / 1 / 8 / 2;"></div>
-            <div id="panel38" class="edge-panel" style="grid-area: 7 / 2 / 8 / 3;"></div>
-            <div id="panel39" class="edge-panel" style="grid-area: 7 / 3 / 8 / 4;"></div>
-            <div id="panel40" class="edge-panel" style="grid-area: 7 / 4 / 8 / 5;"></div>
+          <div
+            id="panel37"
+            class="edge-panel"
+            style="grid-area: 7 / 1 / 8 / 2"
+          ></div>
+          <div
+            id="panel38"
+            class="edge-panel"
+            style="grid-area: 7 / 2 / 8 / 3"
+          ></div>
+          <div
+            id="panel39"
+            class="edge-panel"
+            style="grid-area: 7 / 3 / 8 / 4"
+          ></div>
+          <div
+            id="panel40"
+            class="edge-panel"
+            style="grid-area: 7 / 4 / 8 / 5"
+          ></div>
 
-            <div id="panel41" class="edge-panel" style="grid-area: 8 / 1 / 9 / 3;"></div>
-            <div id="panel42" class="edge-panel" style="grid-area: 8 / 3 / 9 / 5;"></div>
+          <div
+            id="panel41"
+            class="edge-panel"
+            style="grid-area: 8 / 1 / 9 / 3"
+          ></div>
+          <div
+            id="panel42"
+            class="edge-panel"
+            style="grid-area: 8 / 3 / 9 / 5"
+          ></div>
 
+          <div
+            id="panel43"
+            class="edge-panel"
+            style="grid-area: 1 / 9 / 2 / 10"
+          ></div>
+          <div
+            id="panel44"
+            class="edge-panel"
+            style="grid-area: 1 / 10 / 2 / 11"
+          ></div>
+          <div
+            id="panel45"
+            class="edge-panel"
+            style="grid-area: 1 / 11 / 2 / 12"
+          ></div>
+          <div
+            id="panel46"
+            class="edge-panel"
+            style="grid-area: 1 / 12 / 2 / 13"
+          ></div>
 
-            <div id="panel43" class="edge-panel" style="grid-area: 1 / 9 / 2 / 10;"></div>
-            <div id="panel44" class="edge-panel" style="grid-area: 1 / 10 / 2 / 11;"></div>
-            <div id="panel44" class="edge-panel" style="grid-area: 1 / 11 / 2 / 12;"></div>
-            <div id="panel45" class="edge-panel" style="grid-area: 1 / 12 / 2 / 13;"></div>
+          <div
+            id="panel47"
+            class="edge-panel"
+            style="grid-area: 2 / 9 / 3 / 11"
+          ></div>
+          <div
+            id="panel48"
+            class="edge-panel"
+            style="grid-area: 2 / 11 / 3 / 13"
+          ></div>
 
-            <div id="panel46" class="edge-panel" style="grid-area: 2 / 9 / 3 / 11;"></div>
-            <div id="panel47" class="edge-panel" style="grid-area: 2 / 11 / 3 / 13;"></div>
+          <div
+            id="panel49"
+            class="edge-panel"
+            style="grid-area: 7 / 9 / 8 / 10"
+          ></div>
+          <div
+            id="panel50"
+            class="edge-panel"
+            style="grid-area: 7 / 10 / 8 / 11"
+          ></div>
+          <div
+            id="panel51"
+            class="edge-panel"
+            style="grid-area: 7 / 11 / 8 / 12"
+          ></div>
+          <div
+            id="panel52"
+            class="edge-panel"
+            style="grid-area: 7 / 12 / 8 / 13"
+          ></div>
 
-            <div id="panel48" class="edge-panel" style="grid-area: 7 / 9 / 8 / 10;"></div>
-            <div id="panel49" class="edge-panel" style="grid-area: 7 / 10 / 8 / 11;"></div>
-            <div id="panel50" class="edge-panel" style="grid-area: 7 / 11 / 8 / 12;"></div>
-            <div id="panel51" class="edge-panel" style="grid-area: 7 / 12 / 8 / 13;"></div>
+          <div
+            id="panel53"
+            class="edge-panel"
+            style="grid-area: 8 / 9 / 9 / 11"
+          ></div>
+          <div
+            id="panel54"
+            class="edge-panel"
+            style="grid-area: 8 / 11 / 9 / 13"
+          ></div>
 
-            <div id="panel52" class="edge-panel" style="grid-area: 8 / 9 / 9 / 11;"></div>
-            <div id="panel53" class="edge-panel" style="grid-area: 8 / 11 / 9 / 13;"></div>
-
-
-            <div id="panel54" class="edge-panel" style="grid-area: 3 / 1 / 7 / 5;"></div>
-            <div id="panel55" class="edge-panel" style="grid-area: 1 / 5 / 9 / 9; margin-left: 5px; margin-right: 5px;"></div>
-            <div id="panel56" class="edge-panel" style="grid-area: 3 / 9 / 7 / 13;"></div>
+          <div
+            id="panel55"
+            class="edge-panel"
+            style="grid-area: 3 / 1 / 7 / 5"
+          ></div>
+          <div
+            id="panel56"
+            class="edge-panel"
+            style="
+              grid-area: 1 / 5 / 9 / 9;
+              margin-left: 5px;
+              margin-right: 5px;
+            "
+          ></div>
+          <div
+            id="panel57"
+            class="edge-panel"
+            style="grid-area: 3 / 9 / 7 / 13"
+          ></div>
         </div>
+      </div>
+
+      <div id="sidebar">
+        <div id="resize-handle"></div>
+        <div id="sidebar-header" class="drag-handle">
+          <h3>Panel Details</h3>
+          <div>
+            <button id="toggle-dock" class="icon-button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="zoomed-view">
+          <p>Select a panel to see zoomed view</p>
+        </div>
+        <div id="panel-info">
+          <h3>Panel Navigation</h3>
+          <p>Use arrow keys or buttons below to navigate between panels.</p>
+        </div>
+        <div id="panel-navigation">
+          <button class="nav-button" id="prev-button">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Previous
+          </button>
+          <span id="panel-number">Panel: 1</span>
+          <button class="nav-button" id="next-button">
+            Next
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="sidebar-actions">
+          <button id="add-images" class="action-button">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            Add Images
+          </button>
+        </div>
+      </div>
     </div>
 
     <script>
-        const grid = document.getElementById('patachitra-grid');
-        const uploadInput = document.getElementById('image-upload');
-        const edgePanels = document.querySelectorAll('.edge-panel');
-        const centerPanel = document.getElementById('center-panel');
-        const totalEdgePanels = 57;
-        let currentPanel = 1;
+      const grid = document.getElementById("patachitra-grid");
+      const uploadInput = document.getElementById("image-upload");
+      const edgePanels = document.querySelectorAll(".edge-panel");
+      const zoomedView = document.getElementById("zoomed-view");
+      const panelInfo = document.getElementById("panel-info");
+      const panelNumber = document.getElementById("panel-number");
+      const prevButton = document.getElementById("prev-button");
+      const nextButton = document.getElementById("next-button");
+      const sidebar = document.getElementById("sidebar");
+      const resizeHandle = document.getElementById("resize-handle");
+      const toggleDockButton = document.getElementById("toggle-dock");
+      const showUploadButton = document.getElementById("show-upload");
+      const hideUploadButton = document.getElementById("hide-upload");
+      const fileUploadContainer = document.getElementById(
+        "file-upload-container",
+      );
+      const addImagesButton = document.getElementById("add-images");
+      const sidebarHeader = document.getElementById("sidebar-header");
+      const headerButtonsDiv = sidebarHeader.querySelector("div");
 
-        // Highlight current panel
-        function highlightPanel(panelNumber) {
-            // Remove highlight from all panels
-            edgePanels.forEach(p => p.classList.remove('highlight'));
-            
-            // Add highlight to current panel
-            const currentPanelEl = document.getElementById(`panel${panelNumber}`);
-            if (currentPanelEl) {
-                currentPanelEl.classList.add('highlight');
-            }
+      let panelDescriptions = {};
+      const descriptionFileInput = document.createElement("input");
+      descriptionFileInput.type = "file";
+      descriptionFileInput.id = "description-upload";
+      descriptionFileInput.accept = ".json";
+      descriptionFileInput.style.display = "none";
+      document.body.appendChild(descriptionFileInput);
+      const totalEdgePanels = 57;
+      let currentPanel = 1;
+      let panelImages = {};
+      let isDragging = false;
+      let isResizing = false;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+      let isDocked = true;
+      let lastTime = 0;
+      let isFullscreen = false;
+      const fps = 60;
+      const frameInterval = 1000 / fps;
+
+      const fullscreenButton = document.createElement("button");
+      fullscreenButton.id = "toggle-fullscreen";
+      fullscreenButton.className = "icon-button";
+      fullscreenButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+            </svg>
+        `;
+      headerButtonsDiv.insertBefore(fullscreenButton, toggleDockButton);
+
+      const loadDescriptionsButton = document.createElement("button");
+      loadDescriptionsButton.id = "load-descriptions";
+      loadDescriptionsButton.className = "action-button";
+      loadDescriptionsButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Load Descriptions
+        `;
+
+      const sidebarActions = document.querySelector(".sidebar-actions");
+      sidebarActions.appendChild(loadDescriptionsButton);
+
+      // Highlight current panel and update zoom view
+      function highlightPanel(panelNumber) {
+        // Remove highlight from all panels
+        edgePanels.forEach((p) => p.classList.remove("highlight"));
+
+        // Add highlight to current panel
+        const currentPanelEl = document.getElementById(`panel${panelNumber}`);
+        if (currentPanelEl) {
+          currentPanelEl.classList.add("highlight");
+          updateZoomedView(currentPanelEl, panelNumber);
+
+          // Smooth scroll to panel if it's not fully visible
+          currentPanelEl.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+          });
+        }
+      }
+
+      // Update the zoomed view with the current panel's image
+      function updateZoomedView(panelElement, number) {
+        const panelImage = panelElement.querySelector("img");
+
+        if (panelImage) {
+          // Clear zoomed view and add the image
+          zoomedView.innerHTML = "";
+          const zoomedImg = document.createElement("img");
+          zoomedImg.src = panelImage.src;
+          zoomedView.appendChild(zoomedImg);
+
+          // Update panel info with our new function
+          updatePanelInfo(number);
+        } else {
+          zoomedView.innerHTML = "<p>No image in this panel</p>";
+          updatePanelInfo(number); // Still update info
         }
 
-        // Handle image upload
-        uploadInput.addEventListener('change', (e) => {
-            const files = e.target.files;
-            
-            // Fill edge panels first
-            for (let i = 0; i < Math.min(files.length, totalEdgePanels); i++) {
-                const panel = document.getElementById(`panel${i + 1}`);
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    panel.innerHTML = ''; // Clear previous content
-                    panel.appendChild(img);
-                };
-                reader.readAsDataURL(files[i]);
-            }
+        // Update panel number display
+        panelNumber.textContent = `Panel: ${number}`;
+      }
+      function handleDescriptionUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-            // If there are more images, fill the center panel
-            if (files.length > totalEdgePanels) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    centerPanel.innerHTML = ''; // Clear previous content
-                    centerPanel.appendChild(img);
-                };
-                reader.readAsDataURL(files[totalEdgePanels]);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data && data.panels) {
+              panelDescriptions = data;
+              // Update the sidebar header with story info
+              updateSidebarHeader();
+              // Update the current panel info if available
+              updatePanelInfo(currentPanel);
+              // Show a success message
+              alert(
+                `Successfully loaded story: "${data.title}" by ${data.author}`,
+              );
+            } else {
+              alert("Invalid description file format");
             }
+          } catch (error) {
+            console.error("Error parsing description file:", error);
+            alert(
+              "Error loading description file. Please check the file format.",
+            );
+          }
+        };
+        reader.readAsText(file);
+
+        // Reset the file input to allow selecting the same file again
+        e.target.value = "";
+      }
+
+      function updatePanelInfo(panelNumber) {
+        const panelElement = document.getElementById(`panel${panelNumber}`);
+
+        // Clear panel info
+        panelInfo.innerHTML = "";
+
+        // Add description from our loaded descriptions if available
+        if (panelDescriptions.panels && panelDescriptions.panels[panelNumber]) {
+          const panel = panelDescriptions.panels[panelNumber];
+          panelInfo.innerHTML += `
+                    <h3 style="margin-bottom: 8px;">${panel.title || ""}</h3>
+                    <p>${panel.description || ""}</p>
+                `;
+        } else if (panelImages[panelNumber] && panelImages[panelNumber].title) {
+          // Fall back to filename if no description
+          panelInfo.innerHTML += `<h3>Panel ${panelNumber}</h3>
+                                    <p>${panelImages[panelNumber].title}</p>`;
+        } else {
+          panelInfo.innerHTML += `<h3>Panel ${panelNumber}</h3>
+                                    <p>No description available</p>`;
+        }
+      }
+
+      function updateSidebarHeader() {
+        const headerTitle = sidebarHeader.querySelector("h3");
+
+        if (panelDescriptions.title && panelDescriptions.author) {
+          headerTitle.textContent = `Story: ${panelDescriptions.title} by ${panelDescriptions.author}`;
+        } else {
+          headerTitle.textContent = "Panel Details";
+        }
+      }
+
+      // Handle image upload
+      function handleImageUpload(e) {
+        const files = e.target.files;
+
+        // Clear all existing images
+        edgePanels.forEach((panel) => {
+          panel.innerHTML = "";
         });
+        panelImages = {};
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case 'ArrowRight':
-                    currentPanel = currentPanel < totalEdgePanels ? currentPanel + 1 : 1;
-                    break;
-                case 'ArrowLeft':
-                    currentPanel = currentPanel > 1 ? currentPanel - 1 : totalEdgePanels;
-                    break;
+        // Store images for panels
+        for (let i = 0; i < Math.min(files.length, totalEdgePanels); i++) {
+          const panel = document.getElementById(`panel${i + 1}`);
+          const file = files[i];
+
+          // Store image info
+          panelImages[i + 1] = {
+            title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+          };
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = document.createElement("img");
+            img.src = event.target.result;
+            panel.innerHTML = ""; // Clear previous content
+            panel.appendChild(img);
+
+            // Update zoomed view if this is the current panel
+            if (i + 1 === currentPanel) {
+              highlightPanel(currentPanel);
             }
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // Reset the file input to allow selecting the same files again
+        e.target.value = "";
+
+        // Hide the upload panel after files are selected
+        fileUploadContainer.classList.add("hidden");
+      }
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        switch (e.key) {
+          case "ArrowRight":
+            currentPanel =
+              currentPanel < totalEdgePanels ? currentPanel + 1 : 1;
             highlightPanel(currentPanel);
-        });
+            break;
+          case "ArrowLeft":
+            currentPanel =
+              currentPanel > 1 ? currentPanel - 1 : totalEdgePanels;
+            highlightPanel(currentPanel);
+            break;
+        }
+      });
 
-        // Initialize
-        highlightPanel(1);
+      // Button navigation
+      prevButton.addEventListener("click", () => {
+        currentPanel = currentPanel > 1 ? currentPanel - 1 : totalEdgePanels;
+        highlightPanel(currentPanel);
+      });
+
+      nextButton.addEventListener("click", () => {
+        currentPanel = currentPanel < totalEdgePanels ? currentPanel + 1 : 1;
+        highlightPanel(currentPanel);
+      });
+
+      // Add click event to panels
+      edgePanels.forEach((panel, index) => {
+        panel.addEventListener("click", () => {
+          currentPanel = index + 1;
+          highlightPanel(currentPanel);
+        });
+      });
+
+      // Sidebar resize functionality
+      resizeHandle.addEventListener("mousedown", (e) => {
+        isResizing = true;
+        document.addEventListener("mousemove", handleResize);
+        document.addEventListener("mouseup", stopResize);
+        e.preventDefault();
+      });
+
+      loadDescriptionsButton.addEventListener("click", () => {
+        descriptionFileInput.click();
+      });
+      descriptionFileInput.addEventListener("change", handleDescriptionUpload);
+
+      const uploadDescriptionButton = document.createElement("button");
+      uploadDescriptionButton.className = "action-button";
+      uploadDescriptionButton.innerHTML = "Upload Story Descriptions";
+      fileUploadContainer.insertBefore(
+        uploadDescriptionButton,
+        hideUploadButton,
+      );
+
+      uploadDescriptionButton.addEventListener("click", () => {
+        descriptionFileInput.click();
+      });
+
+      // Replace the sidebar mousedown event listener
+      sidebar.addEventListener("mousedown", (e) => {
+        // Check if clicking near the bottom-left corner when in floating mode
+        if (isDocked) return;
+
+        const rect = sidebar.getBoundingClientRect();
+        const isNearCorner =
+          e.clientX < rect.left + 15 && e.clientY > rect.bottom - 15;
+
+        if (isNearCorner) {
+          isResizing = true;
+          document.addEventListener("mousemove", handleFloatingResize);
+          document.addEventListener("mouseup", stopFloatingResize);
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+
+      fullscreenButton.addEventListener("click", toggleFullscreen);
+
+      function toggleFullscreen() {
+        isFullscreen = !isFullscreen;
+        document.body.classList.toggle("fullscreen-mode", isFullscreen);
+
+        if (isFullscreen) {
+          // Enter fullscreen mode
+          fullscreenButton.classList.add("active");
+          fullscreenButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 14h6m0 0v6m0-6l-7 7"></path>
+                        <path d="M20 10h-6m0 0V4m0 6l7-7"></path>
+                    </svg>
+                `;
+
+          // Save original state and dimensions
+          sidebar.dataset.originalDocked = isDocked;
+          sidebar.dataset.originalWidth =
+            sidebar.style.width || getComputedStyle(sidebar).width;
+          sidebar.dataset.originalHeight =
+            sidebar.style.height || getComputedStyle(sidebar).height;
+          sidebar.dataset.originalTop = sidebar.style.top || "";
+          sidebar.dataset.originalLeft = sidebar.style.left || "";
+          sidebar.dataset.originalRight = sidebar.style.right || "";
+
+          // Force dock mode
+          if (!isDocked) {
+            isDocked = true;
+            sidebar.classList.remove("floating");
+          }
+
+          // Set full dimensions with a slight delay to ensure smooth transition
+          requestAnimationFrame(() => {
+            sidebar.style.width = "100%";
+            sidebar.style.height = "100vh";
+            sidebar.style.top = "0";
+            sidebar.style.left = "0";
+            sidebar.style.right = "0";
+          });
+        } else {
+          // Exit fullscreen mode
+          fullscreenButton.classList.remove("active");
+          fullscreenButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                        <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                        <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                        <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                    </svg>
+                `;
+
+          // Restore original state
+          const wasFloating = sidebar.dataset.originalDocked === "false";
+
+          if (wasFloating) {
+            isDocked = false;
+            sidebar.classList.add("floating");
+
+            // Restore original dimensions and position with a slight delay
+            requestAnimationFrame(() => {
+              sidebar.style.width = sidebar.dataset.originalWidth || "400px";
+              sidebar.style.height = sidebar.dataset.originalHeight || "80vh";
+              sidebar.style.top = sidebar.dataset.originalTop || "10vh";
+              sidebar.style.left = sidebar.dataset.originalLeft || "auto";
+              sidebar.style.right = sidebar.dataset.originalRight || "20px";
+            });
+          } else {
+            // Restore original dimensions for docked mode
+            requestAnimationFrame(() => {
+              sidebar.style.width = sidebar.dataset.originalWidth || "280px";
+              sidebar.style.height = "100vh";
+              sidebar.style.top = "";
+              sidebar.style.left = "";
+              sidebar.style.right = "";
+            });
+          }
+        }
+
+        // Update the current panel view after size change
+        setTimeout(() => {
+          highlightPanel(currentPanel);
+        }, 300);
+      }
+
+      const originalToggleDockFunction = toggleDockButton.onclick;
+      toggleDockButton.onclick = function () {
+        // Exit fullscreen mode if active
+        if (isFullscreen) {
+          toggleFullscreen();
+        }
+        // Call original function
+        originalToggleDockFunction.call(this);
+      };
+
+      // Update the floating resize handler for bottom-left corner
+      function handleFloatingResize(e) {
+        if (!isResizing) return;
+        const now = performance.now();
+        if (now - lastTime < frameInterval) return;
+        lastTime = now;
+
+        const rect = sidebar.getBoundingClientRect();
+        const width = rect.right - e.clientX;
+        const height = e.clientY - rect.top;
+
+        // Increase max dimensions
+        const newWidth = Math.max(280, width);
+        const newHeight = Math.max(600, height);
+
+        // Update dimensions with larger maximums
+        sidebar.style.width = `${Math.min(1200, newWidth)}px`;
+        sidebar.style.height = `${Math.min((120 * window.innerHeight) / 100, newHeight)}px`;
+
+        // Update position to maintain right edge position
+        sidebar.style.left = `${rect.right - newWidth}px`;
+      }
+
+      function stopFloatingResize() {
+        isResizing = false;
+        document.removeEventListener("mousemove", handleFloatingResize);
+        document.removeEventListener("mouseup", stopFloatingResize);
+      }
+
+      function handleResize(e) {
+        if (!isResizing) return;
+        const now = performance.now();
+        if (now - lastTime < frameInterval) return;
+        lastTime = now;
+
+        const newWidth = document.body.clientWidth - e.clientX;
+        // Respect min and max widths
+        sidebar.style.width = `${Math.min(1000, Math.max(280, newWidth))}px`;
+      }
+
+      function stopResize() {
+        isResizing = false;
+        document.removeEventListener("mousemove", handleResize);
+        document.removeEventListener("mouseup", stopResize);
+      }
+
+      // Toggle between docked and floating sidebar
+      toggleDockButton.addEventListener("click", () => {
+        isDocked = !isDocked;
+        sidebar.classList.toggle("floating");
+
+        if (isDocked) {
+          sidebar.style.top = "";
+          sidebar.style.left = "";
+          sidebar.style.right = "";
+          sidebar.style.height = "100vh"; // Reset height
+          // Keep width as is or reset to default
+        } else {
+          // Store current width if needed
+          const currentWidth = sidebar.clientWidth;
+          sidebar.style.width = `${currentWidth}px`;
+          sidebar.style.height = "80vh"; // Set initial floating height
+
+          // Position it better on the screen
+          sidebar.style.top = "10vh";
+          sidebar.style.right = "20px";
+        }
+
+        // Update toggle button icon (keep your existing code here)
+      });
+
+      // Make sidebar draggable when floating
+      sidebarHeader.addEventListener("mousedown", (e) => {
+        if (!isDocked) {
+          isDragging = true;
+          const rect = sidebar.getBoundingClientRect();
+          dragOffsetX = e.clientX - rect.left;
+          dragOffsetY = e.clientY - rect.top;
+
+          document.addEventListener("mousemove", handleDrag);
+          document.addEventListener("mouseup", stopDrag);
+          e.preventDefault();
+        }
+      });
+
+      function handleDrag(e) {
+        if (!isDragging) return;
+        const now = performance.now();
+        if (now - lastTime < frameInterval) return;
+        lastTime = now;
+
+        const x = e.clientX - dragOffsetX;
+        const y = e.clientY - dragOffsetY;
+
+        sidebar.style.left = `${x}px`;
+        sidebar.style.top = `${y}px`;
+        sidebar.style.right = "auto";
+      }
+
+      function stopDrag() {
+        isDragging = false;
+        document.removeEventListener("mousemove", handleDrag);
+        document.removeEventListener("mouseup", stopDrag);
+      }
+
+      // Show/hide file upload panel
+      showUploadButton.addEventListener("click", () => {
+        fileUploadContainer.classList.remove("hidden");
+        uploadInput.click(); // Directly open file dialog
+      });
+
+      hideUploadButton.addEventListener("click", () => {
+        fileUploadContainer.classList.add("hidden");
+      });
+
+      // Add images button in sidebar
+      addImagesButton.addEventListener("click", () => {
+        fileUploadContainer.classList.remove("hidden");
+        uploadInput.click(); // Directly open file dialog
+      });
+
+      // Initialize file upload handler
+      uploadInput.addEventListener("change", handleImageUpload);
+
+      // Initialize
+      updateSidebarHeader();
+      highlightPanel(1);
     </script>
-</body>
+  </body>
 </html>
